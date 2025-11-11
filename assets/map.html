@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Quality Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .marker-popup {
+            font-family: Arial, sans-serif;
+        }
+        .marker-popup h3 {
+            margin-bottom: 8px;
+            color: #00796B;
+        }
+        .marker-popup p {
+            margin: 4px 0;
+        }
+        .status-good { color: #4CAF50; }
+        .status-moderate { color: #FFC107; }
+        .status-elevated { color: #FF9800; }
+        .status-high { color: #F44336; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([40.7128, -74.0060], 10);
+
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Define marker data
+        const markers = [
+            {
+                lat: 40.7128,
+                lng: -74.0060,
+                title: 'Location 1',
+                ppl: 45.2,
+                status: 'Good'
+            },
+            {
+                lat: 40.7580,
+                lng: -73.9855,
+                title: 'Location 2',
+                ppl: 67.8,
+                status: 'Moderate'
+            },
+            {
+                lat: 40.7489,
+                lng: -73.9680,
+                title: 'Location 3',
+                ppl: 89.5,
+                status: 'High'
+            },
+            {
+                lat: 40.7614,
+                lng: -73.9776,
+                title: 'Location 4',
+                ppl: 38.1,
+                status: 'Good'
+            },
+            {
+                lat: 40.7505,
+                lng: -73.9934,
+                title: 'Location 5',
+                ppl: 72.3,
+                status: 'Elevated'
+            }
+        ];
+
+        // Function to get color based on status
+        function getColorByStatus(status) {
+            switch(status) {
+                case 'Good': return '#4CAF50';
+                case 'Moderate': return '#FFC107';
+                case 'Elevated': return '#FF9800';
+                case 'High': return '#F44336';
+                default: return '#4CAF50';
+            }
+        }
+
+        // Function to get size based on PPL value
+        function getSizeByPPL(ppl) {
+            return Math.min(ppl / 100 * 20 + 8, 30);
+        }
+
+        // Add markers to the map
+        markers.forEach(function(markerData) {
+            const color = getColorByStatus(markerData.status);
+            const size = getSizeByPPL(markerData.ppl);
+
+            // Create custom circle marker
+            const circleMarker = L.circleMarker([markerData.lat, markerData.lng], {
+                radius: size,
+                fillColor: color,
+                color: '#000',
+                weight: 2,
+                opacity: 0.8,
+                fillOpacity: 0.8
+            }).addTo(map);
+
+            // Bind popup with information
+            const popupContent = `
+                <div class="marker-popup">
+                    <h3>${markerData.title}</h3>
+                    <p><strong>PPL:</strong> ${markerData.ppl}</p>
+                    <p><strong>Status:</strong> <span class="status-${markerData.status.toLowerCase()}">${markerData.status}</span></p>
+                </div>
+            `;
+            circleMarker.bindPopup(popupContent);
+        });
+    </script>
+</body>
+</html>

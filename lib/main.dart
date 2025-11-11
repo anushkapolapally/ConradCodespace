@@ -291,196 +291,183 @@ class DataMapPage extends StatefulWidget {
 }
 
 class _DataMapPageState extends State<DataMapPage> {
-  double _offsetX = 0;
-  double _offsetY = 0;
-  double _scale = 1.0;
-  int? _selectedMarker;
-
-  final List<MapMarker> _markers = [
-    MapMarker(
-        id: 1,
-        x: 200,
-        y: 150,
-        title: 'Location 1',
-        ppl: 45.2,
-        status: 'Good',
-        color: Colors.green),
-    MapMarker(
-        id: 2,
-        x: 350,
-        y: 200,
-        title: 'Location 2',
-        ppl: 67.8,
-        status: 'Moderate',
-        color: Colors.yellow),
-    MapMarker(
-        id: 3,
-        x: 150,
-        y: 300,
-        title: 'Location 3',
-        ppl: 89.5,
-        status: 'High',
-        color: Colors.red),
-    MapMarker(
-        id: 4,
-        x: 400,
-        y: 350,
-        title: 'Location 4',
-        ppl: 38.1,
-        status: 'Good',
-        color: Colors.green),
-    MapMarker(
-        id: 5,
-        x: 280,
-        y: 450,
-        title: 'Location 5',
-        ppl: 72.3,
-        status: 'Elevated',
-        color: Colors.orange),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
           title: const Text('Data Map'), backgroundColor: Colors.teal[700]),
-      body: Stack(
-        children: [
-          GestureDetector(
-            onScaleUpdate: (details) {
-              setState(() {
-                _scale = (_scale * details.scale).clamp(0.5, 3.0);
-                _offsetX += details.focalPointDelta.dx;
-                _offsetY += details.focalPointDelta.dy;
-              });
-            },
-            child: Container(
-              color: Colors.grey[200],
-              child: CustomPaint(
-                painter: MapPainter(
-                  offsetX: _offsetX,
-                  offsetY: _offsetY,
-                  scale: _scale,
-                  markers: _markers,
-                  selectedMarker: _selectedMarker,
-                ),
-                child: Container(),
-              ),
-            ),
-          ),
-          ..._markers.map((marker) {
-            final screenX = marker.x * _scale + _offsetX;
-            final screenY = marker.y * _scale + _offsetY;
-            return Positioned(
-              left: screenX - 20,
-              top: screenY - 40,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedMarker = marker.id;
-                  });
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text(marker.title),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('PPL: ${marker.ppl}',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 8),
-                          Text('Status: ${marker.status}',
-                              style:
-                                  TextStyle(color: marker.color, fontSize: 16)),
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            setState(() => _selectedMarker = null);
-                          },
-                          child: const Text('Close'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                child:
-                    Container(width: 40, height: 40, color: Colors.transparent),
-              ),
-            );
-          }).toList(),
-        ],
-      ),
+      body: const HtmlMapWidget(),
     );
   }
 }
 
-class MapMarker {
-  final int id;
-  final double x;
-  final double y;
-  final String title;
-  final double ppl;
-  final String status;
-  final Color color;
-
-  MapMarker({
-    required this.id,
-    required this.x,
-    required this.y,
-    required this.title,
-    required this.ppl,
-    required this.status,
-    required this.color,
-  });
-}
-
-class MapPainter extends CustomPainter {
-  final double offsetX;
-  final double offsetY;
-  final double scale;
-  final List<MapMarker> markers;
-  final int? selectedMarker;
-
-  MapPainter({
-    required this.offsetX,
-    required this.offsetY,
-    required this.scale,
-    required this.markers,
-    this.selectedMarker,
-  });
+class HtmlMapWidget extends StatelessWidget {
+  const HtmlMapWidget({super.key});
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final gridPaint = Paint()
-      ..color = Colors.grey[300]!
-      ..strokeWidth = 1;
-    final gridSize = 50.0 * scale;
-
-    for (double x = (offsetX % gridSize); x < size.width; x += gridSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-
-    for (double y = (offsetY % gridSize); y < size.height; y += gridSize) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    for (final marker in markers) {
-      final x = marker.x * scale + offsetX;
-      final y = marker.y * scale + offsetY;
-      final pinPaint = Paint()..color = marker.color;
-      canvas.drawCircle(Offset(x, y), 10 * scale, pinPaint);
-    }
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Container(
+        height: MediaQuery.of(context).size.height - 100,
+        color: Colors.grey[200],
+        child: Center(
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.teal, width: 2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            margin: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      Icon(Icons.map, size: 80, color: Colors.teal),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Interactive Map',
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.teal.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Water Quality Locations',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildLocationTile(
+                              'Location 1',
+                              '45.2 PPL',
+                              'Good',
+                              Colors.green,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildLocationTile(
+                              'Location 2',
+                              '67.8 PPL',
+                              'Moderate',
+                              Colors.yellow,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildLocationTile(
+                              'Location 3',
+                              '89.5 PPL',
+                              'High',
+                              Colors.red,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildLocationTile(
+                              'Location 4',
+                              '38.1 PPL',
+                              'Good',
+                              Colors.green,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildLocationTile(
+                              'Location 5',
+                              '72.3 PPL',
+                              'Elevated',
+                              Colors.orange,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Leaflet.js Map',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'CDN: https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  @override
-  bool shouldRepaint(MapPainter oldDelegate) =>
-      oldDelegate.offsetX != offsetX ||
-      oldDelegate.offsetY != offsetY ||
-      oldDelegate.scale != scale ||
-      oldDelegate.selectedMarker != selectedMarker;
+  Widget _buildLocationTile(
+    String title,
+    String ppl,
+    String status,
+    Color statusColor,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: statusColor, width: 2),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                ppl,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              status,
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                color: statusColor,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
