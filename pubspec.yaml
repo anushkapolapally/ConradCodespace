@@ -9,12 +9,11 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  flutter:
-    sdk: flutter
-  http: ^1.2.0
-  google_fonts: ^6.2.1
+  url_launcher: ^6.2.0
+  http: ^1.1.0
   flutter_svg: ^2.0.9
-  webview_flutter: ^4.4.0
+  google_fonts: ^6.1.0
+  webview_flutter: ^4.13.0
 
 dev_dependencies:
   flutter_test:
