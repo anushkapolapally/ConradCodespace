@@ -42,3 +42,15 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Use the Firebase BOM to manage versions for Firebase Android SDKs
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+
+    // Firebase Authentication (KTX for Kotlin). FlutterFire will normally handle
+    // native SDK wiring, but having the dependency here is harmless and explicit.
+    implementation("com.google.firebase:firebase-auth-ktx")
+}
+
+// Apply the Google Services plugin to generate the resources from google-services.json
+apply(plugin = "com.google.gms.google-services")
