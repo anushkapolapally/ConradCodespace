@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'data_map.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -128,6 +129,17 @@ class YourDataPage extends StatelessWidget {
   Widget build(BuildContext context) {
     const double pplLevel = 67.77;
 
+    // Sample data: PPL levels over the past 7 days
+    final List<FlSpot> pplTrendData = [
+      const FlSpot(0, 65.2),
+      const FlSpot(1, 66.5),
+      const FlSpot(2, 64.8),
+      const FlSpot(3, 68.1),
+      const FlSpot(4, 69.5),
+      const FlSpot(5, 67.2),
+      const FlSpot(6, 67.77),
+    ];
+
     return Scaffold(
       appBar: AppBar(
           title: const Text('Your Data'), backgroundColor: Colors.teal[700]),
@@ -139,54 +151,188 @@ class YourDataPage extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Center(
-          child: Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-            elevation: 6,
-            margin: const EdgeInsets.all(20),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.network(
-                    'https://www.svgrepo.com/show/527288/water.svg',
-                    height: 100,
-                    colorFilter:
-                        const ColorFilter.mode(Colors.teal, BlendMode.srcIn),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('67.77 PPL Detected',
-                      style:
-                          TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  const Text('Safe for consumption but not ideal',
-                      style: TextStyle(fontSize: 18)),
-                  const SizedBox(height: 8),
-                  const Text('High for your area',
-                      style: TextStyle(fontSize: 18, color: Colors.redAccent)),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              const RecommendationsPage(pplLevel: pplLevel),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                // Current PPL Level Card
+                Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18)),
+                  elevation: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.network(
+                          'https://www.svgrepo.com/show/527288/water.svg',
+                          height: 100,
+                          colorFilter: const ColorFilter.mode(
+                              Colors.teal, BlendMode.srcIn),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.shopping_cart),
-                    label: const Text('View Recommended Filters'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                        const SizedBox(height: 16),
+                        const Text('67.77 PPL Detected',
+                            style: TextStyle(
+                                fontSize: 26, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 10),
+                        const Text('Safe for consumption but not ideal',
+                            style: TextStyle(fontSize: 18)),
+                        const SizedBox(height: 8),
+                        const Text('High for your area',
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.redAccent)),
+                        const SizedBox(height: 20),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RecommendationsPage(
+                                    pplLevel: pplLevel),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.shopping_cart),
+                          label: const Text('View Recommended Filters'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 12),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 24),
+                // PPL Trend Chart Card
+                Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18)),
+                  elevation: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(left: 16.0, top: 16.0),
+                          child: Text(
+                            'PPL Level Trend (Last 7 Days)',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 300,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 16.0),
+                            child: LineChart(
+                              LineChartData(
+                                gridData: FlGridData(
+                                  show: true,
+                                  drawVerticalLine: true,
+                                  horizontalInterval: 5,
+                                  verticalInterval: 1,
+                                  getDrawingHorizontalLine: (value) {
+                                    return FlLine(
+                                      color: Colors.grey[300]!,
+                                      strokeWidth: 1,
+                                    );
+                                  },
+                                  getDrawingVerticalLine: (value) {
+                                    return FlLine(
+                                      color: Colors.grey[300]!,
+                                      strokeWidth: 1,
+                                    );
+                                  },
+                                ),
+                                titlesData: FlTitlesData(
+                                  show: true,
+                                  rightTitles: const AxisTitles(),
+                                  topTitles: const AxisTitles(),
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      reservedSize: 30,
+                                      getTitlesWidget: (value, meta) {
+                                        const days = [
+                                          'Mon',
+                                          'Tue',
+                                          'Wed',
+                                          'Thu',
+                                          'Fri',
+                                          'Sat',
+                                          'Sun'
+                                        ];
+                                        if (value.toInt() >= 0 &&
+                                            value.toInt() < days.length) {
+                                          return Text(days[value.toInt()]);
+                                        }
+                                        return const Text('');
+                                      },
+                                    ),
+                                  ),
+                                  leftTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      interval: 10,
+                                      reservedSize: 40,
+                                    ),
+                                  ),
+                                ),
+                                borderData: FlBorderData(show: true),
+                                lineBarsData: [
+                                  LineChartBarData(
+                                    spots: pplTrendData,
+                                    isCurved: true,
+                                    gradient: const LinearGradient(
+                                      colors: [Colors.teal, Colors.tealAccent],
+                                    ),
+                                    barWidth: 3,
+                                    isStrokeCapRound: true,
+                                    dotData: FlDotData(
+                                      show: true,
+                                      getDotPainter:
+                                          (spot, percent, barData, index) {
+                                        return FlDotCirclePainter(
+                                          radius: 5,
+                                          color: Colors.teal,
+                                          strokeWidth: 2,
+                                          strokeColor: Colors.white,
+                                        );
+                                      },
+                                    ),
+                                    belowBarData: BarAreaData(
+                                      show: true,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.teal.withValues(alpha: 0.3),
+                                          Colors.teal.withValues(alpha: 0.1),
+                                        ],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                minY: 60,
+                                maxY: 75,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
