@@ -5,6 +5,65 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'data_map.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class FirebaseDataService {
+  static Future<void> init() async {
+    await Firebase.initializeApp();
+  }
+
+  static Future<double> fetchPplLevel({double fallback = 67.77}) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('ppl_metrics')
+          .doc('latest')
+          .get();
+      if (doc.exists) {
+        final data = doc.data();
+        final value = data?['current'];
+        if (value is num) return value.toDouble();
+      }
+    } catch (_) {
+      // ignore and return fallback
+    }
+    return fallback;
+  }
+
+  static Future<List<FlSpot>> fetchPplTrend() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('ppl_metrics')
+          .doc('latest')
+          .get();
+      if (doc.exists) {
+        final data = doc.data();
+        final list = data?['trend'];
+        if (list is List) {
+          final spots = <FlSpot>[];
+          for (var i = 0; i < list.length; i++) {
+            final v = list[i];
+            if (v is num) spots.add(FlSpot(i.toDouble(), v.toDouble()));
+          }
+          if (spots.isNotEmpty) return spots;
+        }
+      }
+    } catch (_) {
+      // ignore and fall back
+    }
+
+    // Default fallback trend (last 7 days)
+    return const [
+      FlSpot(0, 65.2),
+      FlSpot(1, 66.5),
+      FlSpot(2, 64.8),
+      FlSpot(3, 68.1),
+      FlSpot(4, 69.5),
+      FlSpot(5, 67.2),
+      FlSpot(6, 67.77),
+    ];
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
