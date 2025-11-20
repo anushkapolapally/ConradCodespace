@@ -11,7 +11,9 @@ import 'firebase_options.dart';
 
 class FirebaseDataService {
   static Future<void> init() async {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   }
 
   static Future<double> fetchPplLevel({double fallback = 67.77}) async {
@@ -66,27 +68,92 @@ class FirebaseDataService {
   }
 }
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyApp());
+  final initialization = FirebaseDataService.init();
+  runApp(MyApp(initialization: initialization));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Future<void> initialization;
+
+  const MyApp({super.key, required this.initialization});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Water Quality App',
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
-        textTheme: GoogleFonts.poppinsTextTheme(),
+    return FutureBuilder(
+      future: initialization,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: _ErrorScreen(error: snapshot.error.toString()),
+          );
+        }
+
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: _LoadingScreen(),
+          );
+        }
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Water Quality App',
+          theme: ThemeData(
+            primarySwatch: Colors.teal,
+            textTheme: GoogleFonts.poppinsTextTheme(),
+          ),
+          home: const HomeScreen(username: 'Anushka'),
+        );
+      },
+    );
+  }
+}
+
+class _LoadingScreen extends StatelessWidget {
+  const _LoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+       return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
       ),
-      home: const HomeScreen(username: 'Anushka'),
+    );
+  }
+}
+
+class _ErrorScreen extends StatelessWidget {
+  final String error;
+
+  const _ErrorScreen({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        padding: const EdgeInsets.all(24),
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+            const SizedBox(height: 16),
+            const Text(
+              'Unable to load app',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+  
     );
   }
 }
