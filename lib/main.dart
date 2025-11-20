@@ -117,7 +117,7 @@ class _LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-       return const Scaffold(
+    return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(),
       ),
@@ -153,7 +153,226 @@ class _ErrorScreen extends StatelessWidget {
           ],
         ),
       ),
-  
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  String _errorMessage = '';
+
+  void _login() {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (username.toLowerCase() == 'anushka' && password == 'polapally') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const HomeScreen(username: 'Anushka'),
+        ),
+      );
+    } else {
+      setState(() {
+        _errorMessage = 'Invalid username or password';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF00796B), Color(0xFF4DB6AC)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.network(
+                    'https://www.svgrepo.com/show/383020/water-drop.svg',
+                    height: 120,
+                    colorFilter:
+                        const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  ),
+                  const SizedBox(height: 30),
+                  Text(
+                    'Water Quality',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Monitor & Protect',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Login',
+                          style: GoogleFonts.poppins(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal[800],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        TextField(
+                          controller: _usernameController,
+                          decoration: InputDecoration(
+                            labelText: 'Username',
+                            prefixIcon:
+                                const Icon(Icons.person, color: Colors.teal),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                  color: Colors.teal, width: 2),
+                            ),
+                          ),
+                          onSubmitted: (_) => _login(),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon:
+                                const Icon(Icons.lock, color: Colors.teal),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.teal,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                  color: Colors.teal, width: 2),
+                            ),
+                          ),
+                          onSubmitted: (_) => _login(),
+                        ),
+
+                        // Error Message
+                        if (_errorMessage.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.red[300]!),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline,
+                                    color: Colors.red[700], size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage,
+                                    style: TextStyle(
+                                      color: Colors.red[700],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 24),
+
+                        // Login Button
+                        ElevatedButton(
+                          onPressed: _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 3,
+                          ),
+                          child: Text(
+                            'Login',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -284,7 +503,7 @@ class _YourDataPageState extends State<YourDataPage> {
 
       if (doc.exists) {
         final data = doc.data();
-        
+
         final currentValue = data?['current'];
         if (currentValue is num) {
           setState(() {
@@ -376,8 +595,8 @@ class _YourDataPageState extends State<YourDataPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => RecommendationsPage(
-                                    pplLevel: pplLevel),
+                                builder: (_) =>
+                                    RecommendationsPage(pplLevel: pplLevel),
                               ),
                             );
                           },
