@@ -67,7 +67,7 @@ class FirebaseDataService {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -179,23 +179,83 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class YourDataPage extends StatelessWidget {
+class YourDataPage extends StatefulWidget {
   const YourDataPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const double pplLevel = 67.77;
+  State<YourDataPage> createState() => _YourDataPageState();
+}
 
-    // Sample data: PPL levels over the past 7 days
-    final List<FlSpot> pplTrendData = [
-      const FlSpot(0, 65.2),
-      const FlSpot(1, 66.5),
-      const FlSpot(2, 64.8),
-      const FlSpot(3, 68.1),
-      const FlSpot(4, 69.5),
-      const FlSpot(5, 67.2),
-      const FlSpot(6, 67.77),
-    ];
+class _YourDataPageState extends State<YourDataPage> {
+  double pplLevel = 67.77;
+  List<FlSpot> pplTrendData = const [
+    FlSpot(0, 65.2),
+    FlSpot(1, 66.5),
+    FlSpot(2, 64.8),
+    FlSpot(3, 68.1),
+    FlSpot(4, 69.5),
+    FlSpot(5, 67.2),
+    FlSpot(6, 67.77),
+  ];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchFirebaseData();
+  }
+
+  Future<void> _fetchFirebaseData() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('ppl_metrics')
+          .doc('latest')
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        
+        final currentValue = data?['current'];
+        if (currentValue is num) {
+          setState(() {
+            pplLevel = currentValue.toDouble();
+          });
+        }
+
+        final trendList = data?['trend'];
+        if (trendList is List && trendList.isNotEmpty) {
+          final spots = <FlSpot>[];
+          for (var i = 0; i < trendList.length; i++) {
+            final v = trendList[i];
+            if (v is num) {
+              spots.add(FlSpot(i.toDouble(), v.toDouble()));
+            }
+          }
+          if (spots.isNotEmpty) {
+            setState(() {
+              pplTrendData = spots;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching Firebase data: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+            title: const Text('Your Data'), backgroundColor: Colors.teal[700]),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -230,8 +290,8 @@ class YourDataPage extends StatelessWidget {
                               Colors.teal, BlendMode.srcIn),
                         ),
                         const SizedBox(height: 16),
-                        const Text('67.77 PPL Detected',
-                            style: TextStyle(
+                        Text('${pplLevel.toStringAsFixed(2)} PPL Detected',
+                            style: const TextStyle(
                                 fontSize: 26, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
                         const Text('Safe for consumption but not ideal',
@@ -246,7 +306,7 @@ class YourDataPage extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const RecommendationsPage(
+                                builder: (_) => RecommendationsPage(
                                     pplLevel: pplLevel),
                               ),
                             );
