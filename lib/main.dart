@@ -24,6 +24,7 @@ class FirebaseDataService {
           .get();
       if (doc.exists) {
         final data = doc.data();
+
         final value = data?['current'];
         if (value is num) return value.toDouble();
       }
